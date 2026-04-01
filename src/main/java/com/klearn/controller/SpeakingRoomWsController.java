@@ -1,6 +1,7 @@
 package com.klearn.controller;
 
 import com.klearn.dto.MicToggleMessage;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -21,5 +22,23 @@ public class SpeakingRoomWsController {
     ) {
         messagingTemplate.convertAndSend("/topic/speaking-room/" + roomId + "/mic", message);
     }
+
+    @MessageMapping("/speaking-room/{roomId}/chat")
+    public void handleChat(
+            @DestinationVariable("roomId") Long roomId,
+            ChatMessage message
+    ) {
+        messagingTemplate.convertAndSend(
+                "/topic/speaking-room/" + roomId + "/chat", message
+        );
+    }
+
+    @Data
+    static class ChatMessage {
+        private Long userId;
+        private String userName;
+        private String message;
+    }
+
 }
 

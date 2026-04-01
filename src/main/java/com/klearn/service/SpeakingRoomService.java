@@ -9,7 +9,6 @@ import com.klearn.repository.SpeakingRoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -25,7 +24,7 @@ public class SpeakingRoomService {
         return speakingRoomRepository.findByIsActiveTrue();
     }
 
-    public SpeakingRoom createRoom(String name, Integer maxParticipants, User createdBy) {
+    public SpeakingRoom createRoom(String name, Integer maxParticipants, String description, User createdBy) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Room name is required");
         }
@@ -36,6 +35,7 @@ public class SpeakingRoomService {
         room.setMaxParticipants(max);
         room.setCreatedBy(createdBy);
         room.setIsActive(true);
+        room.setDescription(description);
 
         SpeakingRoom saved = speakingRoomRepository.save(room);
 

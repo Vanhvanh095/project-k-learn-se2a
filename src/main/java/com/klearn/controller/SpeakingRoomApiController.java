@@ -8,18 +8,12 @@ import com.klearn.security.UserDetailsImpl;
 import com.klearn.service.SpeakingRoomService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/speaking-rooms")
@@ -46,9 +40,10 @@ public class SpeakingRoomApiController {
         User createdBy = user.getUser();
         Integer maxParticipants = request != null ? request.getMaxParticipants() : null;
         SpeakingRoom room = speakingRoomService.createRoom(
-            request != null ? request.getName() : null,
-            maxParticipants,
-            createdBy
+                request.getRoomName(),
+                request.getMaxParticipants(),
+                request.getDescription(), // ← thêm vào đây
+                createdBy
         );
 
         broadcastParticipants(room.getRoomId());
@@ -86,8 +81,9 @@ public class SpeakingRoomApiController {
 
     @Data
     static class CreateRoomRequest {
-        private String name;
+        private String roomName;
         private Integer maxParticipants;
+        private String description;
     }
 }
 

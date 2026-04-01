@@ -1412,141 +1412,550 @@ body {
 }
 
 /* ---- Listening ---- */
-.listening-card {
-    text-align: center;
-    padding: 40px 20px;
-    margin-bottom: 24px;
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  background: #F8F9FF;
+  min-height: 100vh;
+  color: #0F172A;
+  padding: 32px 16px;
 }
 
+/* ---- LAYOUT WRAPPER (preview only) ---- */
+.preview-wrap {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* =============================================
+   PAGE HEADER
+   ============================================= */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #0F172A;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  line-height: 1.2;
+}
+
+.title-kr-badge {
+  display: inline-flex;
+  align-items: center;
+  background: #FFF0F1;
+  color: #FF4757;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+}
+
+.page-subtitle {
+  font-size: 14px;
+  color: #64748B;
+  margin-top: 4px;
+}
+
+.skill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #0F172A;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 999px;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
+/* =============================================
+   EXERCISE CONTAINER
+   ============================================= */
+.exercise-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* =============================================
+   PROGRESS BAR CARD
+   ============================================= */
+.exercise-progress {
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px 20px;
+  box-shadow: 0 4px 24px rgba(15,23,42,0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#listeningProgress {
+  font-size: 13px;
+  color: #64748B;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.progress-pct {
+  font-size: 12px;
+  color: #FF4757;
+  font-weight: 700;
+}
+
+.progress-bar {
+  position: relative;
+  height: 6px;
+  background: #F1F5F9;
+  border-radius: 999px;
+  overflow: visible;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #FF4757, #FF6B81);
+  position: relative;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  right: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #FF4757;
+  box-shadow: 0 0 0 3px rgba(255,71,87,0.2), 0 0 8px rgba(255,71,87,0.5);
+}
+
+/* =============================================
+   LISTENING CARD — PLAY BUTTON AREA
+   ============================================= */
+.listening-card {
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(15,23,42,0.08);
+  padding: 56px 32px 48px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 0;
+}
+
+/* Korean watermark background */
+.listening-card::before,
+.listening-card::after {
+  font-family: 'Pretendard', sans-serif;
+  position: absolute;
+  font-weight: 900;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  color: #0F172A;
+  opacity: 0.035;
+}
+
+.listening-card::before {
+  content: '듣기';
+  font-size: 120px;
+  top: -10px;
+  left: -20px;
+  transform: rotate(-12deg);
+}
+
+.listening-card::after {
+  content: '소리';
+  font-size: 100px;
+  bottom: -15px;
+  right: -15px;
+  transform: rotate(8deg);
+}
+
+/* Play button */
 .btn-listen-big {
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    background: var(--gradient-listen-btn);
-    border: 2px solid var(--border-accent-strong);
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    justify-content: center;
-    cursor: pointer;
-    transition: all var(--transition-normal);
-    color: var(--text-primary);
-    font-family: var(--font-primary);
-    font-size: 13px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #FF4757 0%, #FF6B81 100%);
+  box-shadow: 0 8px 32px rgba(255,71,87,0.4);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+  z-index: 1;
+}
+
+/* Pulse ring */
+.btn-listen-big::before {
+  content: '';
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  background: rgba(255,71,87,0.18);
+  animation: listenPulse 1.8s ease-out infinite;
+  z-index: -1;
 }
 
 .btn-listen-big:hover {
-    transform: scale(1.05);
-    border-color: var(--accent-primary);
-    box-shadow: var(--shadow-glow);
+  transform: scale(1.08);
+  box-shadow: 0 12px 40px rgba(255,71,87,0.55);
 }
 
+.btn-listen-big:active {
+  transform: scale(0.97);
+}
+
+.btn-listen-big.playing::before {
+  animation-duration: 0.9s;
+  background: rgba(255,71,87,0.25);
+}
+
+/* Speaker SVG icon inside button */
 .listen-icon {
-    font-size: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.listen-icon svg {
+  width: 36px;
+  height: 36px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+}
+
+@keyframes listenPulse {
+  0%   { transform: scale(1);    opacity: 0.18; }
+  70%  { transform: scale(1.55); opacity: 0; }
+  100% { transform: scale(1.55); opacity: 0; }
 }
 
 .listening-hint {
-    margin-top: 12px;
-    font-size: 14px;
-    color: var(--text-muted);
+  margin-top: 20px;
+  font-size: 14px;
+  color: #94A3B8;
+  font-style: italic;
+  letter-spacing: 0.01em;
 }
 
-/* ---- Answer Options ---- */
+/* Playing state label */
+.playing-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: #FF4757;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.btn-listen-big.playing ~ .playing-label {
+  opacity: 1;
+}
+
+/* Sound wave bars animation */
+.wave-bars {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 14px;
+}
+
+.wave-bars span {
+  display: block;
+  width: 3px;
+  border-radius: 999px;
+  background: #FF4757;
+  animation: waveBar 0.8s ease-in-out infinite;
+}
+.wave-bars span:nth-child(1) { height: 6px;  animation-delay: 0s; }
+.wave-bars span:nth-child(2) { height: 12px; animation-delay: 0.15s; }
+.wave-bars span:nth-child(3) { height: 8px;  animation-delay: 0.3s; }
+.wave-bars span:nth-child(4) { height: 14px; animation-delay: 0.1s; }
+.wave-bars span:nth-child(5) { height: 6px;  animation-delay: 0.25s; }
+
+@keyframes waveBar {
+  0%, 100% { transform: scaleY(0.5); opacity: 0.5; }
+  50%       { transform: scaleY(1);   opacity: 1; }
+}
+
+/* =============================================
+   ANSWER OPTIONS
+   ============================================= */
 .answer-options,
 .quiz-answers {
-    display: grid;
-    gap: 10px;
-    margin-bottom: 20px;
+  display: grid;
+  gap: 10px;
+  margin-bottom: 4px;
 }
 
 .answer-option,
 .quiz-answer {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    background: var(--bg-card);
-    border: 2px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: 14px 20px;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    font-family: var(--font-primary);
-    font-size: 15px;
-    color: var(--text-primary);
-    text-align: left;
-    width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fff;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: #0F172A;
+  text-align: left;
+  width: 100%;
+  position: relative;
+  animation: optionReveal 0.35s ease both;
+}
+
+/* Staggered entrance per option */
+.answer-option:nth-child(1), .quiz-answer:nth-child(1) { animation-delay: 0.05s; }
+.answer-option:nth-child(2), .quiz-answer:nth-child(2) { animation-delay: 0.10s; }
+.answer-option:nth-child(3), .quiz-answer:nth-child(3) { animation-delay: 0.15s; }
+.answer-option:nth-child(4), .quiz-answer:nth-child(4) { animation-delay: 0.20s; }
+
+@keyframes optionReveal {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .answer-option:hover,
 .quiz-answer:hover {
-    background: var(--bg-card-hover);
-    border-color: var(--accent-primary);
+  border-color: #FF4757;
+  background: #FFF8F8;
+  transform: translateX(3px);
+  box-shadow: 0 4px 16px rgba(255,71,87,0.1);
 }
 
+.answer-option:hover .answer-letter,
+.quiz-answer:hover .answer-letter {
+  background: #FF4757;
+  color: #fff;
+  border-color: #FF4757;
+}
+
+/* Correct state */
 .answer-option.correct,
 .quiz-answer.correct {
-    border-color: var(--success);
-    background: var(--success-bg);
+  border-color: #10B981;
+  background: #F0FDF4;
+  transform: translateX(0);
+  box-shadow: 0 4px 16px rgba(16,185,129,0.12);
 }
 
+.answer-option.correct .answer-letter,
+.quiz-answer.correct .answer-letter {
+  background: #10B981;
+  color: #fff;
+  border-color: #10B981;
+}
+
+.answer-option.correct::after,
+.quiz-answer.correct::after {
+  content: '✓';
+  position: absolute;
+  right: 20px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #10B981;
+}
+
+/* Incorrect state */
 .answer-option.incorrect,
 .quiz-answer.incorrect {
-    border-color: var(--danger);
-    background: var(--danger-bg);
+  border-color: #EF4444;
+  background: #FFF5F5;
+  transform: translateX(0);
+  box-shadow: 0 4px 16px rgba(239,68,68,0.1);
 }
 
+.answer-option.incorrect .answer-letter,
+.quiz-answer.incorrect .answer-letter {
+  background: #EF4444;
+  color: #fff;
+  border-color: #EF4444;
+}
+
+.answer-option.incorrect::after,
+.quiz-answer.incorrect::after {
+  content: '✗';
+  position: absolute;
+  right: 20px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #EF4444;
+}
+
+/* Disabled */
 .answer-option.disabled,
 .quiz-answer.disabled {
-    pointer-events: none;
-    opacity: 0.7;
+  pointer-events: none;
+  opacity: 0.65;
 }
 
+/* Answer letter badge */
 .answer-letter {
-    width: 30px;
-    height: 30px;
-    border-radius: var(--radius-full);
-    background: var(--accent-light-hover);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 13px;
-    color: var(--text-secondary);
-    flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  border-radius: 50%;
+  border: 1.5px solid #E2E8F0;
+  background: #F8F9FF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  color: #0F172A;
+  flex-shrink: 0;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
-/* ---- Exercise Result ---- */
+/* =============================================
+   EXERCISE RESULT
+   ============================================= */
 .exercise-result {
-    text-align: center;
-    padding: 20px;
-    margin: 16px 0;
-    border-radius: var(--radius-md);
-    animation: slideUp var(--transition-fast);
+  padding: 20px 24px;
+  margin: 4px 0;
+  border-radius: 14px;
+  animation: resultSlideUp 0.3s ease both;
+  border-left: 4px solid transparent;
+}
+
+.exercise-result.result-correct {
+  background: linear-gradient(135deg, #F0FDF4, #DCFCE7);
+  border-left-color: #10B981;
+}
+
+.exercise-result.result-incorrect {
+  background: linear-gradient(135deg, #FFF5F5, #FEE2E2);
+  border-left-color: #EF4444;
+}
+
+@keyframes resultSlideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .result-icon {
-    font-size: 36px;
-    margin-bottom: 8px;
+  font-size: 36px;
+  margin-bottom: 6px;
 }
 
 .result-text {
-    font-size: 16px;
-    font-weight: 700;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0F172A;
 }
 
 .result-explanation {
-    font-size: 14px;
-    color: var(--text-secondary);
-    margin-top: 4px;
+  font-size: 14px;
+  color: #64748B;
+  margin-top: 6px;
+  line-height: 1.6;
 }
 
+/* =============================================
+   EXERCISE ACTIONS — NEXT BUTTON
+   ============================================= */
 .exercise-actions {
-    display: flex;
-    gap: 12px;
-    margin-top: 20px;
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
 }
 
+#listeningNextBtn {
+  flex: 1;
+  height: 52px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #FF4757 0%, #FF6B81 100%);
+  color: #fff;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 20px rgba(255,71,87,0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  animation: btnFadeIn 0.3s ease both;
+}
+
+#listeningNextBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(255,71,87,0.45);
+}
+
+#listeningNextBtn:active {
+  transform: translateY(0);
+}
+
+@keyframes btnFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* =============================================
+   RESPONSIVE
+   ============================================= */
+@media (max-width: 768px) {
+  body { padding: 20px 12px; }
+
+  .page-title { font-size: 22px; }
+
+  .listening-card {
+    padding: 40px 20px 36px;
+    border-radius: 20px;
+  }
+
+  .btn-listen-big {
+    width: 80px;
+    height: 80px;
+  }
+
+  .listening-card::before { font-size: 80px; }
+  .listening-card::after  { font-size: 70px; }
+
+  .answer-option,
+  .quiz-answer {
+    padding: 14px 16px;
+    font-size: 14px;
+  }
+}
 /* ---- Speaking ---- */
 .speaking-prompt {
     text-align: center;

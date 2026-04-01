@@ -24,6 +24,8 @@ public class SpeakingRoom {
 
     @Column(name = "max_participants")
     private Integer maxParticipants = 10;
+    @Column(length = 200)
+    private String description;
 
     @Column(name = "is_active")
     private Boolean isActive = true;
