@@ -479,6 +479,104 @@ async function loadListening(lessonId) {
     }
 }
 
+// ================= QUIZ LOGIC =================
+
+async function startQuiz(type) {
+    state.quizType = type;
+    state.quizIndex = 0;
+    state.quizCorrect = 0;
+    state.quizQuestions = [];
+
+    try {
+        // Gọi API lấy dữ liệu quiz ngẫu nhiên từ DB
+        const res = await fetch(`/api/quiz/generate?type=${type}`);
+        state.quizQuestions = await res.json();
+
+        if (state.quizQuestions.length === 0) {
+            showToast("Chưa có đủ dữ liệu cho bài thi này!", "info");
+            return;
+        }
+
+        // Chuyển UI
+        document.getElementById('quizSetup').style.display = 'none';
+        document.getElementById('quizInProgress').style.display = 'block';
+        document.getElementById('quizSummary').style.display = 'none';
+
+        renderQuizQuestion();
+    } catch (err) {
+        console.error("Lỗi khởi tạo quiz:", err);
+    }
+}
+
+function renderQuizQuestion() {
+    const q = state.quizQuestions[state.quizIndex];
+
+    // Cập nhật Progress
+    document.getElementById('quizQuestionNum').innerText = `Câu ${state.quizIndex + 1}/${state.quizQuestions.length}`;
+    document.getElementById('quizProgressBar').style.width = `${((state.quizIndex + 1) / state.quizQuestions.length) * 100}%`;
+    document.getElementById('quizScore').innerText = `Điểm: ${state.quizCorrect}`;
+
+    // Hiển thị text câu hỏi
+    document.getElementById('quizQText').innerText = q.question;
+
+    // Xử lý Audio nếu là bài nghe
+    const audioDiv = document.getElementById('quizQAudio');
+    if (q.audioUrl) {
+        audioDiv.style.display = 'block';
+        state.currentQuizAudio = q.audioUrl;
+    } else {
+        audioDiv.style.display = 'none';
+    }
+
+    // Render Đáp án
+    const answersDiv = document.getElementById('quizAnswers');
+    answersDiv.innerHTML = q.options.map((opt, i) => `
+        <button class="quiz-answer-card" onclick="submitQuizAnswer('${opt}')">
+            ${opt}
+        </button>
+    `).join('');
+
+    document.getElementById('quizNextBtn').style.display = 'none';
+    document.getElementById('quizResult').style.display = 'none';
+}
+
+function submitQuizAnswer(selected) {
+    const q = state.quizQuestions[state.quizIndex];
+    const isCorrect = selected === q.correctAnswer;
+
+    if (isCorrect) {
+        state.quizCorrect++;
+        showQuizFeedback(true, "Chính xác!");
+    } else {
+        showQuizFeedback(false, `Sai rồi! Đáp án đúng là: ${q.correctAnswer}`);
+    }
+
+    document.getElementById('quizNextBtn').style.display = 'inline-block';
+}
+
+function nextQuizQuestion() {
+    state.quizIndex++;
+    if (state.quizIndex < state.quizQuestions.length) {
+        renderQuizQuestion();
+    } else {
+        showQuizSummary();
+    }
+}
+
+function showQuizSummary() {
+    document.getElementById('quizInProgress').style.display = 'none';
+    document.getElementById('quizSummary').style.display = 'block';
+
+    const percent = Math.round((state.quizCorrect / state.quizQuestions.length) * 100);
+    document.getElementById('qsScoreText').innerText = `${percent}%`;
+    document.getElementById('qsDetail').innerText = `${state.quizCorrect}/${state.quizQuestions.length} câu đúng`;
+
+    // Hiệu ứng vòng tròn điểm
+    const circle = document.getElementById('scoreCircle');
+    const offset = 339.292 - (339.292 * percent / 100);
+    circle.style.strokeDashoffset = offset;
+}
+
 // ================= RENDER UI =================
 function renderListening() {
     const l = state.listeningData[state.listeningIndex];
