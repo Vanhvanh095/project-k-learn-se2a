@@ -3,7 +3,6 @@ package com.klearn.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.util.List;
 
 @Entity
@@ -11,7 +10,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 public class Exercise {
-    @Id 
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "exercise_id")
     private Long exerciseId;
@@ -24,10 +23,16 @@ public class Exercise {
     @Column(nullable = false)
     private ExerciseType type;
 
-    @Column(name = "audio_url", length = 500)
+    // Tăng length lên 1000 hoặc dùng TEXT để lưu đoạn hội thoại tiếng Hàn dài
+    @Column(name = "audio_url", columnDefinition = "TEXT")
     private String audioUrl;
-    @OneToMany(mappedBy = "exercise", fetch = FetchType.LAZY)
+
+    @Column(name = "level", length = 50)
+    private String level;
+
+    @OneToMany(mappedBy = "exercise", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Question> questions;
+
     public enum ExerciseType {
         listening, speaking, reading, writing
     }

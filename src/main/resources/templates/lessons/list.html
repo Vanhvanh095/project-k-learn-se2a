@@ -6,6 +6,127 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${course.title + ' - Lessons'}">Lessons</title>
+
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            --card-bg: #ffffff;
+            --accent-color: #6c5ce7;
+            --success-color: #00b894;
+            --text-main: #2d3436;
+            --text-muted: #636e72;
+            --border-radius: 16px;
+            --shadow: 0 10px 20px rgba(0,0,0,0.05);
+        }
+
+        #page-course-lessons {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+            text-align: left;
+            border-left: 5px solid var(--accent-color);
+            padding-left: 20px;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            color: var(--text-main);
+            margin: 0;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .page-subtitle {
+            color: var(--text-muted);
+            margin-top: 5px;
+            font-size: 1.1rem;
+        }
+
+        /* Card bài học */
+        .progress-item {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px !important;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0,0,0,0.02);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .progress-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(108, 92, 231, 0.1);
+        }
+
+        .progress-item-header {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .lesson-index {
+            background: #e8f0fe;
+            color: var(--accent-color);
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            margin-right: 8px;
+        }
+
+        .lesson-title-text {
+            font-size: 1.15rem;
+            color: var(--text-main);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Màu sắc trạng thái */
+        .status-completed { background: #d1fae5; color: #065f46; }
+        .status-in-progress { background: #fef3c7; color: #92400e; }
+        .status-not-started { background: #f3f4f6; color: #374151; }
+
+        /* Nút mở bài học */
+        .btn-open {
+            background-color: var(--accent-color);
+            color: white !important;
+            padding: 10px 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: background 0.3s ease;
+        }
+
+        .btn-open:hover {
+            background-color: #5649c1;
+            box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px;
+            color: var(--text-muted);
+            background: #f8fafc;
+            border-radius: var(--border-radius);
+            border: 2px dashed #e2e8f0;
+        }
+    </style>
 </head>
 <body>
 <div layout:fragment="content">
@@ -13,27 +134,33 @@
         <div class="page-header">
             <div>
                 <h2 class="page-title" th:text="${course.title}">Course</h2>
-                <p class="page-subtitle">Danh sách bài học</p>
+                <p class="page-subtitle">Khám phá kiến thức mới mỗi ngày ✨</p>
             </div>
         </div>
 
-        <div th:if="${lessons == null || #lists.isEmpty(lessons)}">
-            <p>No lessons found.</p>
+        <div th:if="${lessons == null || #lists.isEmpty(lessons)}" class="empty-state">
+            <p>Chưa có bài học nào trong khóa này. Quay lại sau nhé!</p>
         </div>
 
         <div th:if="${lessons != null}">
             <div th:each="lesson : ${lessons}">
-                <div class="progress-item" style="margin-bottom:12px;">
+                <div class="progress-item">
                     <div class="progress-item-header">
-                        <span style="font-weight:800;">
-                            <span th:text="${lesson.orderIndex}">1</span>. <span th:text="${lesson.title}">Lesson title</span>
-                        </span>
-                        <span style="color:var(--text-secondary); font-size:13px;"
-                              th:text="${statusByLessonId != null ? statusByLessonId.get(lesson.lessonId) : null}">not_started</span>
+                        <div>
+                            <span class="lesson-index" th:text="${lesson.orderIndex}">1</span>
+                            <span class="lesson-title-text" th:text="${lesson.title}">Lesson title</span>
+                        </div>
+                        <div style="margin-top: 8px;">
+                            <span class="status-badge status-not-started"
+                                  th:text="${statusByLessonId != null ? statusByLessonId.get(lesson.lessonId) : 'Chưa học'}"
+                                  th:classappend="${statusByLessonId?.get(lesson.lessonId) == 'completed' ? 'status-completed' : ''}">
+                                not_started
+                            </span>
+                        </div>
                     </div>
                     <div>
-                        <a th:href="@{/lessons/{id}/player(id=${lesson.lessonId})}" style="color:var(--accent-primary); font-weight:700;">
-                            Mở bài học
+                        <a th:href="@{/lessons/{id}/player(id=${lesson.lessonId})}" class="btn-open">
+                            Bắt đầu học
                         </a>
                     </div>
                 </div>
@@ -43,4 +170,3 @@
 </div>
 </body>
 </html>
-

@@ -206,8 +206,39 @@
     window.KLEARN_INITIAL_THEME = /*[[${user != null ? user.theme : 'light'}]]*/ 'light';
 </script>
 
-<script th:src="@{/js/dark-mode.js}"></script>
-<script th:src="@{/js/app.js}"></script>
+<script th:inline="javascript">
+    window.KLEARN_INITIAL_THEME = /*[[${user != null ? user.theme : 'light'}]]*/ 'light';
+</script>
+
+<!-- Core -->
+<script th:src="@{/js/dark-mode.js}" defer></script>
+<script th:src="@{/js/router.js}" defer></script>
+
+<!-- UI -->
+<script th:src="@{/js/ui/sidebar.js}" defer></script>
+<script th:src="@{/js/ui/toast.js}" defer></script>
+<script th:src="@{/js/ui/profile.js}" defer></script>
+
+<!-- 🔥 STATE + STORAGE + UTILS (PHẢI TRƯỚC FEATURES) -->
+<script th:src="@{/js/state.js}" defer></script>
+<script th:src="@{/js/storage.js}" defer></script>
+<script th:src="@{/js/utils.js}" defer></script>
+
+<!-- Features -->
+<script th:src="@{/js/features/dashboard.js}" defer></script>
+<script th:src="@{/js/features/hangul.js}" defer></script>
+<script th:src="@{/js/features/vocabulary.js}" defer></script>
+<script th:src="@{/js/features/grammar.js}" defer></script>
+<script th:src="@{/js/features/listening.js}" defer></script>
+<script th:src="@{/js/features/speaking.js}" defer></script>
+<script th:src="@{/js/features/reading.js}" defer></script>
+<script th:src="@{/js/features/writing.js}" defer></script>
+<script th:src="@{/js/features/canvas.js}" defer></script>
+<script th:src="@{/js/features/flashcard.js}" defer></script>
+<script th:src="@{/js/features/quiz.js}" defer></script>
+
+<!-- App (LUÔN CUỐI) -->
+<script th:src="@{/js/app.js}" defer></script>
 </body>
 </html>
 www.thymeleaf.org

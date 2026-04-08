@@ -2,45 +2,236 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout}">
-<head><title>Từ vựng — K-Learn</title></head>
+<head>
+    <title>Từ vựng — K-Learn</title>
+    <style>
+        /* ═══════════════════════════════════════════════════
+           K-LEARN VOCABULARY REFRESH - FULL STYLES
+        ═══════════════════════════════════════════════════ */
+        :root {
+            --vocab-primary: #8b5cf6;
+            --vocab-bg: #f8fafc;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        #page-vocabulary {
+            max-width: 1100px;
+            margin: auto;
+            padding: 40px 20px;
+            font-family: 'Pretendard', system-ui, sans-serif;
+        }
+
+        /* SEARCH AREA */
+        .vocab-search-area .header-search {
+            display: flex;
+            align-items: center;
+            background: white;
+            border: 2px solid #f1f5f9;
+            border-radius: 50px;
+            padding: 5px 5px 5px 20px !important;
+            transition: all 0.3s ease;
+        }
+
+        .vocab-search-area .header-search:focus-within {
+            border-color: var(--vocab-primary);
+            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.1) !important;
+        }
+
+        #pageVocabSearchInput {
+            border: none !important;
+            outline: none !important;
+            width: 100%;
+            background: transparent;
+        }
+
+        /* CATEGORY FILTER */
+        .category-filter {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 10px 0 30px;
+            scrollbar-width: none;
+        }
+
+        .category-filter::-webkit-scrollbar { display: none; }
+
+        .category-btn {
+            white-space: nowrap;
+            padding: 10px 22px;
+            border-radius: 50px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            color: var(--text-muted);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .category-btn.active {
+            background: var(--vocab-primary);
+            color: white;
+            border-color: var(--vocab-primary);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        /* VOCAB LIST GRID */
+        .vocab-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
+        /* VOCAB ITEM CARD */
+        .vocab-item {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            border: 1px solid #f1f5f9;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+            transition: all 0.3s ease;
+            min-height: 160px;
+        }
+
+        .vocab-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.06);
+            border-color: #ede9fe;
+        }
+
+        .vocab-header {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .vocab-korean {
+            font-size: 26px;
+            font-weight: 850;
+            color: var(--text-main);
+            font-family: 'Noto Serif KR', serif;
+        }
+
+        .vocab-roman {
+            font-size: 15px;
+            color: var(--vocab-primary);
+            font-weight: 600;
+        }
+
+        .vocab-meaning {
+            font-size: 17px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: auto;
+            padding-top: 5px;
+        }
+
+        .vocab-category-tag {
+            font-size: 10px;
+            font-weight: 800;
+            color: #94a3b8;
+            background: #f1f5f9;
+            padding: 4px 10px;
+            border-radius: 8px;
+            width: fit-content;
+            text-transform: uppercase;
+            margin-top: 15px;
+        }
+
+        /* ACTIONS */
+        .vocab-actions {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .vocab-speak-btn, .vocab-learn-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #f8fafc;
+            font-size: 16px;
+        }
+
+        .vocab-speak-btn { color: var(--vocab-primary); }
+        .vocab-speak-btn:hover { background: var(--vocab-primary); color: white; }
+
+        .vocab-learn-btn { color: #cbd5e1; }
+        .vocab-learn-btn:hover, .vocab-learn-btn.active {
+            background: #fffbeb;
+            color: #f59e0b;
+        }
+
+        @media (max-width: 600px) {
+            .vocab-list { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
 <body>
 <div layout:fragment="content">
-<section class="page active" id="page-vocabulary">
-    <div class="page-header" style="margin-bottom: 16px;">
-        <div>
-            <h2 class="page-title">Từ vựng 어휘</h2>
-            <p class="page-subtitle">Học từ vựng tiếng Hàn theo chủ đề và tra cứu từ thiện</p>
+    <section class="page active" id="page-vocabulary">
+        <div class="page-header" style="margin-bottom: 24px;">
+            <div>
+                <h2 class="page-title">Từ vựng <span style="color: var(--vocab-primary);">어휘</span></h2>
+                <p class="page-subtitle text-muted">Học từ vựng theo chủ đề và tra cứu thông minh</p>
+            </div>
         </div>
-    </div>
-    
-    <!-- Vocab Page Search Area -->
-    <div class="vocab-search-area" style="margin-bottom: 24px;">
-        <div class="header-search" style="margin: 0; max-width: 100%; padding: 6px 8px 6px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-            <input type="text" id="pageVocabSearchInput" placeholder="Tra cứu từ vựng (Nhập tiếng Hàn hoặc tiếng Việt)..." style="font-size: 16px;" onkeydown="handlePageVocabSearch(event)">
-            <button class="btn-search" onclick="searchPageVocab()" style="width: 40px; height: 40px; font-size: 16px; background: var(--accent-primary); color: white;">🔍</button>
-            <div id="pageVocabSearchResults" class="search-dropdown" style="display:none; top: calc(100% + 12px); font-size: 16px;"></div>
+
+        <div class="vocab-search-area" style="margin-bottom: 24px;">
+            <div class="header-search">
+                <input type="text" id="pageVocabSearchInput"
+                       placeholder="Tra cứu từ vựng (Nhập tiếng Hàn hoặc tiếng Việt)..."
+                       onkeydown="handlePageVocabSearch(event)">
+                <button class="btn-search" onclick="searchPageVocab()"
+                        style="width: 40px; height: 40px; border-radius: 50%; background: var(--vocab-primary); color: white; border: none;">
+                    🔍
+                </button>
+                <div id="pageVocabSearchResults" class="search-dropdown" style="display:none;"></div>
+            </div>
         </div>
-    </div>
-    <div class="category-filter" id="vocabCategories" th:if="${categories != null}">
-        <button class="category-btn active" data-category="all" onclick="filterVocab('all')">Tất cả</button>
-        <button class="category-btn" th:each="cat : ${categories}" 
-                th:data-category="${cat}" 
-                th:text="${cat}" 
-                onclick="filterVocab(this.getAttribute('data-category'))"></button>
-    </div>
-    
-    <div class="vocab-list" id="vocabList" th:if="${vocabList != null}">
-        <!-- Render from server perfectly matching old JS structure -->
-        <div class="vocab-item" th:each="v : ${vocabList}" th:data-category="${v.category}">
-            <span class="vocab-korean" th:text="${v.kr}"></span>
-            <span class="vocab-roman" th:text="${v.roman}"></span>
-            <span class="vocab-meaning" th:text="${v.vi}"></span>
-            <span class="vocab-category-tag" th:text="${v.category}"></span>
-            <button class="vocab-speak-btn" th:attr="onclick=|event.stopPropagation(); speakKorean('${v.kr}')|">🔊</button>
-            <button class="vocab-learn-btn" th:attr="data-kr=${v.kr}, onclick=|event.stopPropagation(); toggleVocabLearned(this)|">📌</button>
+
+        <div class="category-filter" id="vocabCategories" th:if="${categories != null}">
+            <button class="category-btn active" data-category="all" onclick="filterVocab('all')">Tất cả</button>
+            <button class="category-btn" th:each="cat : ${categories}"
+                    th:data-category="${cat}"
+                    th:text="${cat}"
+                    onclick="filterVocab(this.getAttribute('data-category'))"></button>
         </div>
-    </div>
-</section>
+
+        <div class="vocab-list" id="vocabList" th:if="${vocabList != null}">
+            <div class="vocab-item" th:each="v : ${vocabList}" th:data-category="${v.category}">
+                <div class="vocab-header">
+                    <span class="vocab-korean" th:text="${v.kr}"></span>
+                    <span class="vocab-roman" th:text="${v.roman}"></span>
+                </div>
+
+                <div class="vocab-meaning" th:text="${v.vi}"></div>
+
+                <span class="vocab-category-tag" th:text="${v.category}"></span>
+
+                <div class="vocab-actions">
+                    <button class="vocab-speak-btn"
+                            th:attr="onclick=|event.stopPropagation(); speakKorean('${v.kr}')|"
+                            title="Nghe phát âm">🔊</button>
+                    <button class="vocab-learn-btn"
+                            th:attr="data-kr=${v.kr}, onclick=|event.stopPropagation(); toggleVocabLearned(this)|"
+                            title="Đánh dấu đã học">📌</button>
+                </div>
+            </div>
+        </div>
+    </section>
 </div>
 </body>
 </html>

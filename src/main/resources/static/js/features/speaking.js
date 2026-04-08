@@ -1,5 +1,101 @@
-// Speaking.js - Web Speech API for Korean pronunciation
-// UC-09: Speaking Exercise with Web Speech API
+// ---- Speaking ----
+function initSpeaking() {
+    const data = state.speakingData || [];
+    if (data.length === 0) return;
+
+    state.speakingIndex = Math.floor(Math.random() * data.length);
+    renderSpeakingPrompt();
+}
+
+async function loadSpeaking(lessonId) {
+    const res = await fetch(`/api/lessons/${lessonId}/speaking`);
+    const data = await res.json();
+    state.speakingData = data || [];
+    state.speakingIndex = 0;
+    renderSpeakingPrompt();
+}
+
+function renderSpeakingPrompt() {
+    const data = state.speakingData || [];
+    if (data.length === 0) return;
+
+    const s = data[state.speakingIndex % data.length];
+    document.getElementById('speakingTextKr').textContent = s.kr;
+    document.getElementById('speakingTextRoman').textContent = s.roman;
+    document.getElementById('speakingTextVi').textContent = s.vi;
+    document.getElementById('speakingResult').style.display = 'none';
+    document.getElementById('recordingIndicator').style.display = 'none';
+    document.getElementById('recordBtn').classList.remove('recording');
+    document.getElementById('recordText').textContent = 'Nhấn để ghi âm';
+}
+
+function nextSpeakingPrompt() {
+    const data = state.speakingData || [];
+    if (data.length === 0) return;
+
+    state.speakingIndex = (state.speakingIndex + 1) % data.length;
+    renderSpeakingPrompt();
+}
+
+function toggleRecording() {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        showToast('Trình duyệt không hỗ trợ nhận diện giọng nói. Hãy dùng Chrome!', 'error');
+        return;
+    }
+    if (state.isRecording) {
+        state.recognition.stop();
+        return;
+    }
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    state.recognition = new SpeechRecognition();
+    state.recognition.lang = 'ko-KR';
+    state.recognition.interimResults = false;
+    state.recognition.onstart = () => {
+        state.isRecording = true;
+        document.getElementById('recordBtn').classList.add('recording');
+        document.getElementById('recordText').textContent = 'Đang nghe...';
+        document.getElementById('recordingIndicator').style.display = 'flex';
+    };
+    state.recognition.onresult = (event) => {
+        const result = event.results[0][0].transcript;
+        const data = state.speakingData || [];
+        if (data.length === 0) return;
+
+        const target = data[state.speakingIndex % data.length].kr;
+        document.getElementById('speakingResultText').textContent = result;
+        document.getElementById('speakingResult').style.display = 'block';
+        const similarity = calculateSimilarity(result, target);
+        const scoreEl = document.getElementById('speakingScore');
+        if (similarity > 0.7) { scoreEl.innerHTML = `<span style="color:var(--success)">🎉 Tuyệt vời! (${Math.round(similarity * 100)}%)</span>`; }
+        else if (similarity > 0.4) { scoreEl.innerHTML = `<span style="color:var(--warning)">👍 Khá tốt! (${Math.round(similarity * 100)}%)</span>`; }
+        else { scoreEl.innerHTML = `<span style="color:var(--danger)">💪 Thử lại nhé! (${Math.round(similarity * 100)}%)</span>`; }
+    };
+    state.recognition.onend = () => {
+        state.isRecording = false;
+        document.getElementById('recordBtn').classList.remove('recording');
+        document.getElementById('recordText').textContent = 'Nhấn để ghi âm';
+        document.getElementById('recordingIndicator').style.display = 'none';
+    };
+    state.recognition.onerror = () => {
+        state.isRecording = false;
+        document.getElementById('recordBtn').classList.remove('recording');
+        document.getElementById('recordText').textContent = 'Nhấn để ghi âm';
+        document.getElementById('recordingIndicator').style.display = 'none';
+        showToast('Không nhận diện được. Hãy thử lại!', 'error');
+    };
+    state.recognition.start();
+}
+
+function calculateSimilarity(a, b) {
+    a = a.replace(/\s/g, ''); b = b.replace(/\s/g, '');
+    if (a === b) return 1;
+    const longer = a.length > b.length ? a : b;
+    const shorter = a.length > b.length ? b : a;
+    if (longer.length === 0) return 1;
+    let matches = 0;
+    for (let i = 0; i < shorter.length; i++) { if (longer.includes(shorter[i])) matches++; }
+    return matches / longer.length;
+}
 
 class SpeakingManager {
     constructor() {
@@ -18,7 +114,7 @@ class SpeakingManager {
 
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         this.recognition = new SpeechRecognition();
-        
+
         // Configure for Korean
         this.recognition.lang = 'ko-KR';
         this.recognition.continuous = false;
@@ -70,11 +166,11 @@ class SpeakingManager {
         if (!this.recognition) {
             throw new Error('Speech recognition not available');
         }
-        
+
         if (this.isRecording) {
             this.stop();
         }
-        
+
         this.recognition.start();
     }
 
@@ -152,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize recording buttons
     document.querySelectorAll('[data-record-speaking]').forEach(button => {
         const manager = new SpeakingManager();
-        
+
         button.addEventListener('click', () => {
             if (manager.isRecording) {
                 manager.stop();
@@ -181,3 +277,17 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     });
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+    const lessonId = document.body.getAttribute('data-lesson-id');
+
+    if (lessonId) {
+        loadSpeaking(lessonId);
+    }
+});
+
+window.initSpeaking = initSpeaking;
+window.loadSpeaking = loadSpeaking;
+window.renderSpeakingPrompt = renderSpeakingPrompt;
+window.nextSpeakingPrompt = nextSpeakingPrompt;
+window.toggleRecording = toggleRecording;

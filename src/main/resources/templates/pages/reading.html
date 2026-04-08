@@ -2,30 +2,247 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout}">
-<head><title>Luyện Đọc — K-Learn</title></head>
+<head>
+    <title>Luyện Đọc — K-Learn</title>
+    <style>
+        /* ═══════════════════════════════════════════════════
+           K-LEARN READING REFRESH
+        ═══════════════════════════════════════════════════ */
+        :root {
+            --reading-bg: #fff;
+            --reading-border: #e2e8f0;
+            --accent-color: #f59e0b; /* Màu Amber cho Reading */
+            --accent-soft: #fffbeb;
+        }
+
+        #page-reading {
+            max-width: 900px;
+            margin: auto;
+            padding: 40px 20px;
+            font-family: 'Pretendard', system-ui, sans-serif;
+        }
+
+        .page-title {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: #1e293b;
+        }
+
+        /* ── PASSAGE BOX (Hiệu ứng tờ giấy) ── */
+        .reading-passage {
+            background: var(--reading-bg);
+            border: 1px solid var(--reading-border);
+            border-radius: 24px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+            position: relative;
+        }
+
+        .reading-level {
+            display: inline-block;
+            background: var(--accent-soft);
+            color: var(--accent-color);
+            font-weight: 800;
+            font-size: 12px;
+            padding: 6px 16px;
+            border-radius: 50px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 25px;
+        }
+
+        .reading-text-kr {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 24px;
+            line-height: 1.8;
+            color: #1e293b;
+            margin-bottom: 30px;
+            white-space: pre-wrap;
+        }
+
+        .reading-text-vi {
+            font-size: 16px;
+            color: #64748b;
+            line-height: 1.6;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 15px;
+            border-left: 4px solid var(--accent-color);
+            margin-bottom: 20px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        #readingToggleTranslation {
+            background: transparent;
+            border: 2px solid #e2e8f0;
+            color: #64748b;
+            font-weight: 700;
+            padding: 8px 20px;
+            border-radius: 12px;
+            transition: all 0.2s;
+            margin-bottom: 20px;
+        }
+
+        #readingToggleTranslation:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            background: var(--accent-soft);
+        }
+
+        /* ── QUESTIONS AREA ── */
+        .reading-questions {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .question-block {
+            background: #fff;
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid var(--reading-border);
+        }
+
+        .question-text {
+            font-size: 18px;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 20px;
+        }
+
+        .reading-option {
+            display: block;
+            width: 100%;
+            padding: 15px 25px;
+            margin-bottom: 12px;
+            background: #fff;
+            border: 2px solid #f1f5f9;
+            border-radius: 15px;
+            text-align: left;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .reading-option:hover {
+            border-color: var(--accent-color);
+            background: var(--accent-soft);
+        }
+
+        .reading-option.selected {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+            transform: scale(1.02);
+        }
+
+        .reading-option.correct { background: #10b981 !important; color: white !important; border-color: #10b981 !important; }
+        .reading-option.incorrect { background: #ef4444 !important; color: white !important; border-color: #ef4444 !important; }
+
+        /* ── ACTIONS ── */
+        .exercise-actions {
+            margin-top: 50px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            border: none;
+            padding: 16px 50px;
+            border-radius: 18px;
+            font-weight: 800;
+            font-size: 17px;
+            box-shadow: 0 10px 20px rgba(245, 158, 11, 0.2);
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: #d97706;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(245, 158, 11, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 18px;
+            font-weight: 700;
+        }
+    </style>
+</head>
 <body th:attr="data-lesson-id=${lesson.lessonId}">
 <div layout:fragment="content">
-<section class="page active" id="page-reading">
-    <div class="page-header">
-        <div>
-            <h2 class="page-title">Luyện Đọc 읽기</h2>
-            <p class="page-subtitle">Đọc hiểu đoạn văn tiếng Hàn</p>
+    <section class="page active" id="page-reading">
+        <div class="page-header mb-5 text-center">
+            <div>
+                <h2 class="page-title">Luyện Đọc <span style="color: var(--accent-color);">읽기</span></h2>
+                <p class="page-subtitle text-muted" style="font-size: 1.1rem;">Thử thách khả năng thấu cảm và hiểu văn bản tiếng Hàn</p>
+            </div>
         </div>
-    </div>
-    <div class="exercise-container">
-        <div class="reading-passage">
-            <div class="reading-level" id="readingLevel">Cấp độ: Sơ cấp</div>
-            <div class="reading-text-kr" id="readingTextKr"></div>
-            <button class="btn btn-sm btn-secondary" id="readingToggleTranslation" onclick="toggleReadingTranslation()">👁️ Hiện bản dịch</button>
-            <div class="reading-text-vi" id="readingTextVi" style="display:none;"></div>
+
+        <div class="exercise-container">
+            <div class="reading-passage">
+                <div class="reading-level" id="readingLevel">Cấp độ: Sơ cấp 1</div>
+
+                <div class="reading-text-kr" id="readingTextKr">
+                    안녕하세요! 저는 K-Learn을 좋아합니다.
+                    매일 한국어를 공부합니다.
+                </div>
+
+                <button class="btn btn-sm" id="readingToggleTranslation" onclick="toggleReadingTranslation()">
+                    👁️ Hiện bản dịch tiếng Việt
+                </button>
+
+                <div class="reading-text-vi" id="readingTextVi" style="display:none;">
+                    Xin chào! Tôi thích K-Learn. Tôi học tiếng Hàn mỗi ngày.
+                </div>
+            </div>
+
+            <div class="reading-questions" id="readingQuestions">
+                <div class="question-block">
+                    <div class="question-text">Câu hỏi 1: Nội dung đoạn văn nói về điều gì?</div>
+                    <div class="options-list">
+                        <button class="reading-option">Học tiếng Anh</button>
+                        <button class="reading-option selected">Học tiếng Hàn</button>
+                        <button class="reading-option">Mua sắm</button>
+                        <button class="reading-option">Nấu ăn</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercise-actions">
+                <button class="btn btn-primary" id="readingCheckBtn" onclick="checkReadingAnswers()">
+                    Kiểm tra kết quả
+                </button>
+                <button class="btn btn-secondary" id="readingNextBtn" onclick="nextReadingPassage()" style="display:none;">
+                    Bài tiếp theo →
+                </button>
+            </div>
         </div>
-        <div class="reading-questions" id="readingQuestions"></div>
-        <div class="exercise-actions">
-            <button class="btn btn-primary" id="readingCheckBtn" onclick="checkReadingAnswers()">Kiểm tra</button>
-            <button class="btn btn-secondary" id="readingNextBtn" onclick="nextReadingPassage()" style="display:none;">Bài tiếp →</button>
-        </div>
-    </div>
-</section>
+    </section>
+
+    <script>
+        // Logic toggle đơn giản cho UI
+        function toggleReadingTranslation() {
+            const viText = document.getElementById('readingTextVi');
+            const btn = document.getElementById('readingToggleTranslation');
+            if (viText.style.display === 'none') {
+                viText.style.display = 'block';
+                btn.innerHTML = '🙈 Ẩn bản dịch';
+            } else {
+                viText.style.display = 'none';
+                btn.innerHTML = '👁️ Hiện bản dịch tiếng Việt';
+            }
+        }
+    </script>
 </div>
 </body>
 </html>

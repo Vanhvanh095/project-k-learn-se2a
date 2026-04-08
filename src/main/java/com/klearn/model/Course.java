@@ -22,4 +22,7 @@ public class Course {
 
     @Column(length = 50)
     private String level;
+
+    @Column(name = "image_url")
+    private String imageUrl;
 }

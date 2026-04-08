@@ -9,6 +9,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequiredArgsConstructor
@@ -43,13 +45,18 @@ public class PageController {
         return "pages/grammar";
     }
 
-    @GetMapping("/listening")
-    public String listening(Authentication auth, Model model) {
+    @GetMapping("/lessons/{lessonId}/listening")
+    public String listening(@PathVariable Long lessonId,
+                            Authentication auth,
+                            Model model) {
+
         addUserToModel(auth, model);
+
+        model.addAttribute("lessonId", lessonId);
         model.addAttribute("currentPage", "listening");
+
         return "pages/listening";
     }
-
     @GetMapping("/speaking")
     public String speaking(Authentication auth, Model model) {
         addUserToModel(auth, model);
@@ -64,10 +71,16 @@ public class PageController {
         return "pages/reading";
     }
 
-    @GetMapping("/writing")
-    public String writing(Authentication auth, Model model) {
+    @GetMapping("/lessons/{lessonId}/writing")
+    public String writing(@PathVariable Long lessonId,
+                          Authentication auth,
+                          Model model) {
+
         addUserToModel(auth, model);
         model.addAttribute("currentPage", "writing");
+
+        model.addAttribute("lessonId", lessonId); // 🔥 KEY
+
         return "pages/writing";
     }
 

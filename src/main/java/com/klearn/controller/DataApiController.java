@@ -3,6 +3,7 @@ package com.klearn.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klearn.model.*;
 import com.klearn.repository.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,10 @@ public class DataApiController {
     private final ExerciseRepository exerciseRepository;
     private final SpeakingExerciseRepository speakingRepo;
     private final ReadingPassageRepository readingPassageRepository;
+    private final VocabularyRepository vocabularyRepository;
+    private final WritingCharRepo charRepo;
+    private final WritingTranslateRepo translateRepo;
+
     @GetMapping("/hangul")
     public ResponseEntity<Map<String, List<HangulCharacter>>> getHangul() {
         Map<String, List<HangulCharacter>> data = new LinkedHashMap<>();
@@ -62,64 +67,63 @@ public class DataApiController {
         return ResponseEntity.ok(grammarRepo.findAll());
     }
 
-    @GetMapping("/lessons/{lessonId}/listening")
-    @Transactional(readOnly = true) // Quan trọng: Tránh lỗi LazyInitializationException khi truy cập questions/answers
-    public ResponseEntity<List<Map<String, Object>>> getListeningByLesson(@PathVariable Long lessonId) {
+    @GetMapping("/lessons/{lessonId}/listening") // Đảm bảo đúng path bạn gọi từ JS
+    @ResponseBody
+    @Transactional(readOnly = true)
+    public ResponseEntity<?> getListeningByLesson(@PathVariable Long lessonId) {
+        try {
+            List<Exercise> exercises = exerciseRepository.findByLesson_LessonIdAndType(
+                    lessonId, Exercise.ExerciseType.listening);
 
-        // 1. Tìm tất cả Exercise thuộc bài học này và có loại là listening
-        List<Exercise> exercises = exerciseRepository.findByLesson_LessonIdAndType(
-                lessonId, Exercise.ExerciseType.listening);
-
-        List<Map<String, Object>> result = new ArrayList<>();
-
-        for (Exercise ex : exercises) {
-            Map<String, Object> passage = new HashMap<>();
-            List<Map<String, Object>> questionsList = new ArrayList<>();
-
-            // 2. Kiểm tra tránh NullPointerException nếu Exercise không có câu hỏi
-            if (ex.getQuestions() != null) {
-                for (Question q : ex.getQuestions()) {
-                    Map<String, Object> qMap = new HashMap<>();
-                    qMap.put("q", q.getContent());
-
-                    List<String> options = new ArrayList<>();
-                    int correctIndex = -1;
-
-                    // 3. Duyệt danh sách answers (đã được @OrderBy trong Model)
-                    List<Answer> answers = q.getAnswers();
-                    if (answers != null) {
-                        for (int i = 0; i < answers.size(); i++) {
-                            Answer a = answers.get(i);
-                            options.add(a.getContent());
-
-                            // Kiểm tra isCorrect (TINYINT(1) map sang Boolean)
-                            if (Boolean.TRUE.equals(a.getIsCorrect())) {
-                                correctIndex = i; // Lưu vị trí 0, 1, 2...
-                            }
-                        }
-                    }
-
-                    qMap.put("options", options);
-                    qMap.put("answer", correctIndex); // Index trả về cho JavaScript
-                    questionsList.add(qMap);
-                }
+            if (exercises == null || exercises.isEmpty()) {
+                return ResponseEntity.ok(new ArrayList<>());
             }
 
-            // 4. Đóng gói dữ liệu theo cấu trúc JS mong đợi
-            passage.put("audioUrl", ex.getAudioUrl());
-            passage.put("level", "TOPIK 1"); // Bạn có thể tùy biến lấy từ Exercise nếu có field level
-            passage.put("questions", questionsList);
+            List<Map<String, Object>> result = new ArrayList<>();
 
-            result.add(passage);
+            for (Exercise ex : exercises) {
+                Map<String, Object> passage = new HashMap<>();
+                passage.put("audioUrl", ex.getAudioUrl());
+                passage.put("level", ex.getLevel() != null ? ex.getLevel() : "N/A");
+
+                List<Map<String, Object>> questionsList = new ArrayList<>();
+                if (ex.getQuestions() != null) {
+                    for (Question q : ex.getQuestions()) {
+                        Map<String, Object> qMap = new HashMap<>();
+                        qMap.put("q", q.getContent());
+
+                        List<String> options = new ArrayList<>();
+                        int correctIndex = -1;
+
+                        if (q.getAnswers() != null) {
+                            for (int i = 0; i < q.getAnswers().size(); i++) {
+                                Answer a = q.getAnswers().get(i);
+                                options.add(a.getContent());
+                                if (Boolean.TRUE.equals(a.getIsCorrect())) {
+                                    correctIndex = i;
+                                }
+                            }
+                        }
+                        qMap.put("options", options);
+                        qMap.put("answer", correctIndex);
+                        questionsList.add(qMap);
+                    }
+                }
+                passage.put("questions", questionsList);
+                result.add(passage);
+            }
+            return ResponseEntity.ok(result);
+
+        } catch (Exception e) {
+            e.printStackTrace(); // In lỗi ra Console để xem chính xác lỗi gì
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Lỗi server: " + e.getMessage());
         }
-
-        return ResponseEntity.ok(result);
     }
-    @GetMapping("/speaking")
-    public ResponseEntity<List<SpeakingExercise>> getSpeaking() {
-        return ResponseEntity.ok(speakingRepo.findAll());
+    @GetMapping("/lessons/{lessonId}/speaking")
+    public ResponseEntity<List<SpeakingExercise>> getSpeakingByLesson(@PathVariable Long lessonId) {
+        return ResponseEntity.ok(speakingRepo.findByLesson_LessonId(lessonId));
     }
-
     @GetMapping("/lessons/{lessonId}/reading")
     public ResponseEntity<List<Map<String, Object>>> getReadingByLesson(@PathVariable Long lessonId) {
 
@@ -154,5 +158,15 @@ public class DataApiController {
         }
 
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/lessons/{lessonId}/writing/chars")
+    public List<WritingCharExercise> getChars(@PathVariable Long lessonId) {
+        return charRepo.findByLesson_LessonId(lessonId);
+    }
+
+    @GetMapping("/lessons/{lessonId}/writing/translate")
+    public List<WritingTranslateExercise> getTranslate(@PathVariable Long lessonId) {
+        return translateRepo.findByLesson_LessonId(lessonId);
     }
 }

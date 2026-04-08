@@ -13,4 +13,5 @@ public interface VocabularyRepository extends JpaRepository<Vocabulary, Long> {
     @Query(value = "SELECT * FROM vocabulary ORDER BY RAND() LIMIT :limit", nativeQuery = true)
     List<Vocabulary> findRandomVocabs(@Param("limit") int limit);
     List<Vocabulary> findByLesson_LessonId(Long lessonId);
+
 }

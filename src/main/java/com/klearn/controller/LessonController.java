@@ -45,20 +45,20 @@ public class LessonController {
     }
 
     // ================= LISTENING =================
-    @GetMapping("/{id}/listening")
-    public String viewListening(@PathVariable Long id, Model model) {
-        Lesson lesson = lessonService.getLessonById(id);
-        if (lesson == null) return "redirect:/courses";
-
-        model.addAttribute("lesson", lesson);
-
-        model.addAttribute("listeningExercises",
-                lessonService.getExercisesByLessonAndType(id, Exercise.ExerciseType.listening));
-
-        model.addAttribute("currentPage", "courses");
-
-        return "pages/listening";
-    }
+//    @GetMapping("/lessons/{lessonId}/listening")
+//    public String viewListening(@PathVariable Long id, Model model) {
+//        Lesson lesson = lessonService.getLessonById(id);
+//        if (lesson == null) return "redirect:/courses";
+//
+//        model.addAttribute("lesson", lesson);
+//
+//        model.addAttribute("listeningExercises",
+//                lessonService.getExercisesByLessonAndType(id, Exercise.ExerciseType.listening));
+//
+//        model.addAttribute("currentPage", "courses");
+//
+//        return "pages/listening";
+//    }
 
     // ================= SPEAKING =================
     @GetMapping("/{id}/speaking")
@@ -87,17 +87,6 @@ public class LessonController {
     }
 
     // ================= WRITING =================
-    @GetMapping("/{id}/writing")
-    public String viewWriting(@PathVariable Long id, Model model) {
-        Lesson lesson = lessonService.getLessonById(id);
-        if (lesson == null) return "redirect:/courses";
-
-        model.addAttribute("lesson", lesson);
-        model.addAttribute("exercises", lessonService.getWritingExercisesByLesson(id));
-        model.addAttribute("currentPage", "courses");
-
-        return "pages/writing";
-    }
 
     // ================= REVIEW =================
     @GetMapping("/{id}/review")
